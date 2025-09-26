@@ -1,0 +1,61 @@
+cmake_minimum_required(VERSION 3.14)
+project(lab1_project VERSION 1.0.0 LANGUAGES CXX)
+
+# Настройка стандарта C++
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# Опции компиляции
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic")
+endif()
+
+# Загрузка Google Test через FetchContent
+include(FetchContent)
+
+FetchContent_Declare(
+  googletest
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG v1.14.0
+)
+
+# Настройка для Windows
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+# Скачивание и настройка Google Test
+FetchContent_MakeAvailable(googletest)
+
+# Основная программа
+add_executable(lab1_main 
+    src/main.cpp
+    src/bit_counter.cpp
+)
+
+target_include_directories(lab1_main PUBLIC include)
+
+# Тестовая программа (только если GTest доступен)
+if(googletest_POPULATED)
+    add_executable(lab1_tests 
+        tests/test_bit_counter.cpp
+        src/bit_counter.cpp
+    )
+    
+    target_include_directories(lab1_tests PUBLIC include)
+    target_link_libraries(lab1_tests PRIVATE gtest gtest_main)
+    
+    # Включение системы тестов
+    enable_testing()
+    
+    # Добавление тестов в CTest
+    include(GoogleTest)
+    gtest_discover_tests(lab1_tests)
+    
+    # Дополнительная цель для удобного запуска тестов
+    add_custom_target(run_tests
+        COMMAND $<TARGET_FILE:lab1_tests>
+        DEPENDS lab1_tests
+        COMMENT "Запуск unit-тестов"
+        VERBATIM
+    )
+endif()
