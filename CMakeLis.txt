@@ -58,4 +58,5 @@ if(googletest_POPULATED)
         COMMENT "Запуск unit-тестов"
         VERBATIM
     )
+
 endif()
